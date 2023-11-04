@@ -1,0 +1,17 @@
+{
+  "version": 8,
+  "name": "30 Day Map Challenge - Points",
+  "metadata": {
+  },
+  "sources": {
+  },
+  "glyphs": "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "rgba(51, 51, 51, 1)"}
+    }
+  ],
+  "id": "points"
+}

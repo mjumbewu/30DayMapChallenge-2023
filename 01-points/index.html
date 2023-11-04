@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Division 39-27 Halloween Candy Distribution</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&display=swap');
+
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: rgba(51 51 51 / 1);
+      }
+
+      .content {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      h1 {
+        font-family: 'Gloria Hallelujah', cursive;
+        color: rgba(121 207 0 / 1);
+        text-align: center;
+        margin: 0;
+      }
+
+      main { height: 100%; }
+
+      #map { height: 100%; }
+
+      @media screen and (width <= 425px) {
+        h1 {
+          font-size: 1.2rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="content">
+      <header>
+        <h1>39-27 Trick-or-Treats</h1>
+      </header>
+      <main>
+        <div id="map"></div>
+      </main>
+    </div>
+
+    <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
+    <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
+
+    <script type="module">
+      async function getGeoJSON(url) {
+        const resp = await fetch(url);
+        const json = await resp.json();
+        return json;
+      }
+
+      const [roads, footprints, candy] = await Promise.all([
+        getGeoJSON('../data/div3927-roads.geojson'),
+        getGeoJSON('../data/div3927-footprints.geojson'),
+        getGeoJSON('../data/halloween-candy.geojson'),
+      ]);
+
+      const bounds = turf.bbox(roads);
+      const bearing = 9.7; // The street grid is about 9.7 degrees rotated from north
+      const orientation = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
+
+      let map = new maplibregl.Map({
+        container: 'map',
+        style: 'map-style.json',
+        bounds: bounds,
+        // bearing: orientation == 'landscape' ? bearing : bearing - 90,
+      });
+
+      map.fitBounds(bounds, {
+        bearing: orientation == 'landscape' ? bearing : bearing - 90,
+      });
+
+      map.on('load', () => {
+        map.addSource("roads", { "type": "geojson", "data": roads });
+        map.addSource("footprints", { "type": "geojson", "data": footprints });
+        map.addSource("candy", { "type": "geojson", "data": candy });
+
+        map.loadImage('pumpkin.png', function(error, image) {
+          if (error) throw error;
+          if (!map.hasImage('pumpkin')) {
+            map.addImage('pumpkin', image, {
+              "pixelRatio": 2
+            });
+          }
+        });
+
+        map.addLayer({
+          "id": "road_minor_casing",
+          "source": "roads",
+          "type": "line",
+          "layout": {
+            "line-cap": "round",
+            "line-join": "round",
+            "visibility": "visible"
+          },
+          "paint": {
+            "line-color": "rgba(0, 0, 0, 1)",
+            "line-opacity": 1,
+            "line-width": 15
+          }
+        });
+
+        map.addLayer({
+          "id": "road_minor",
+          "source": "roads",
+          "type": "line",
+          "layout": {
+            "line-cap": "round",
+            "line-join": "round",
+            "visibility": "visible"
+          },
+          "paint": {
+            "line-color": "rgba(34, 34, 34, 1)",
+            "line-width": 10
+          }
+        });
+
+        map.addLayer({
+          "id": "building_footprints",
+          "source": "footprints",
+          "type": "fill",
+          "paint": {
+            "fill-color": "rgba(255, 0, 255, 0.2)"
+          }
+        });
+
+        map.addLayer({
+          "id": "building_outlines",
+          "source": "footprints",
+          "type": "line",
+          "layout": {
+            "line-cap": "round",
+            "line-join": "round",
+            "visibility": "visible"
+          },
+          "paint": {
+            "line-color": "rgba(255, 0, 255, 0.7)",
+            "line-width": 1
+          }
+        });
+
+        map.addLayer({
+          "id": "road_label",
+          "source": "roads",
+          "type": "symbol",
+          "layout": {
+            "symbol-placement": "line",
+            "text-anchor": "center",
+            "text-field": "{tiger:name_base}",
+            "text-offset": [0, 0],
+            "text-size": 13
+          },
+          "paint": {
+            "text-color": "rgba(121, 207, 0, 1)",
+            "text-halo-blur": 0,
+            "text-halo-width": 0.3,
+            "icon-color": "rgba(255, 255, 255, 1)",
+            "text-halo-color": "rgba(121, 207, 0, 1)"
+          }
+        });
+
+        map.addLayer({
+          "id": "candy_footprints",
+          "source": "candy",
+          "type": "symbol",
+          "layout": {
+            "icon-image": "pumpkin",
+            "icon-size": 0.5,
+            "icon-overlap": "always"
+          }
+        })
+      })
+    </script>
+  </body>
+</html>
