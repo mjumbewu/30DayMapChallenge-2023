@@ -59,9 +59,9 @@
       }
 
       const [roads, footprints, candy] = await Promise.all([
-        getGeoJSON('../data/div3927-roads.geojson'),
-        getGeoJSON('../data/div3927-footprints.geojson'),
-        getGeoJSON('../data/halloween-candy.geojson'),
+        getGeoJSON('data/div3927-roads.geojson'),
+        getGeoJSON('data/div3927-footprints.geojson'),
+        getGeoJSON('data/halloween-candy.geojson'),
       ]);
 
       const bounds = turf.bbox(roads);
@@ -155,7 +155,7 @@
           "layout": {
             "symbol-placement": "line",
             "text-anchor": "center",
-            "text-field": "{tiger:name_base}",
+            "text-field": "{name}",
             "text-offset": [0, 0],
             "text-size": 13
           },
